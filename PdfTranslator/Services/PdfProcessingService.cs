@@ -13,6 +13,7 @@ namespace PdfTranslator.Services
         private readonly PdfTextExtractor _textExtractor;
         private readonly PdfToImageConverter _imageConverter;
         private readonly PdfOverlayGenerator _overlayGenerator;
+        private readonly ITextSharpPdfOverlayGenerator _iTextSharpOverlayGenerator;
         private readonly ImagePreprocessor _imagePreprocessor;
 
         public event EventHandler<ProcessingProgress>? ProgressChanged;
@@ -24,6 +25,7 @@ namespace PdfTranslator.Services
             _textExtractor = new PdfTextExtractor();
             _imageConverter = new PdfToImageConverter(Log.Logger);
             _overlayGenerator = new PdfOverlayGenerator(Log.Logger);
+            _iTextSharpOverlayGenerator = new ITextSharpPdfOverlayGenerator(Log.Logger);
             _imagePreprocessor = new ImagePreprocessor();
             
             // Initialize OCR engine based on settings
@@ -52,6 +54,13 @@ namespace PdfTranslator.Services
                     return await ProcessWithDeepLDocumentApiAsync(inputPath, outputPath, cancellationToken);
                 }
 
+                // Check if we should use Microsoft Document Translation API
+                if (_settings.SelectedTranslationProvider == TranslationProvider.MicrosoftTranslator &&
+                    _settings.MicrosoftMode == MicrosoftTranslationMode.DocumentTranslation)
+                {
+                    return await ProcessWithMicrosoftDocumentApiAsync(inputPath, outputPath, cancellationToken);
+                }
+
                 // Check if we should use Google Cloud Document Translation
                 if (_settings.SelectedTranslationProvider == TranslationProvider.GoogleCloud &&
                     !string.IsNullOrEmpty(_settings.GoogleCloudCredentialsPath) &&
@@ -60,7 +69,7 @@ namespace PdfTranslator.Services
                     return await ProcessWithGoogleDocumentApiAsync(inputPath, outputPath, cancellationToken);
                 }
 
-                // Use text extraction + overlay approach for Microsoft Translator or DeepL Text mode
+                // Use text extraction + overlay approach for Microsoft Translator Text mode or DeepL Text mode
                 return await ProcessWithTextExtractionAsync(inputPath, outputPath, cancellationToken);
             }
             catch (Exception ex)
@@ -68,6 +77,43 @@ namespace PdfTranslator.Services
                 Log.Error(ex, "PDF processing failed");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Uses Microsoft's Document Translation API with Azure Blob Storage.
+        /// Preserves formatting natively and handles scanned PDFs with OCR.
+        /// Pricing: ~$15 per million characters + storage costs.
+        /// </summary>
+        private async Task<string> ProcessWithMicrosoftDocumentApiAsync(string inputPath, string outputPath, CancellationToken cancellationToken)
+        {
+            ReportProgress(0, 1, "Using Microsoft Document Translation...");
+            
+            var microsoftDocProvider = new MicrosoftDocumentTranslationProvider(_settings);
+            
+            var validation = microsoftDocProvider.ValidateSettings();
+            if (!validation.IsValid)
+            {
+                throw new InvalidOperationException(validation.ErrorMessage);
+            }
+
+            var progress = new Progress<string>(message => ReportProgress(0, 1, message));
+
+            // Translate document and get character count
+            var (translatedPath, characterCount) = await microsoftDocProvider.TranslateDocumentAsync(
+                inputPath,
+                "ru",    // Source: Russian
+                "en",    // Target: English
+                progress,
+                cancellationToken);
+            
+            // Update character count after successful translation
+            _settings.CharactersTranslated += characterCount;
+            Log.Information("Updated characters translated count: +{Added} = {Total}", 
+                characterCount, _settings.CharactersTranslated);
+            
+            ReportProgress(1, 1, "Completed!");
+            Log.Information("Microsoft document translation completed: {OutputPath}", translatedPath);
+            return translatedPath;
         }
 
         /// <summary>
@@ -112,11 +158,12 @@ namespace PdfTranslator.Services
         {
             ReportProgress(0, 1, "Using DeepL Document Translation (preserves formatting)...");
             
-            var deepLProvider = new DeepLProvider(_settings.DeepLApiKey);
+            var deepLProvider = new DeepLProvider(_settings.GetActiveDeepLApiKey());
             
             if (!deepLProvider.IsConfigured())
             {
-                throw new InvalidOperationException("DeepL API key is not configured. Please add your API key in Settings.");
+                var tierName = _settings.DeepLAccountTier == AccountTier.Free ? "Free" : "Pro";
+                throw new InvalidOperationException($"DeepL API key ({tierName}) is not configured. Please add your API key in Settings.");
             }
 
             // Extract text from PDF to count characters for tracking
@@ -351,10 +398,25 @@ namespace PdfTranslator.Services
 
                     if (blocksWithPositions.Count > 0)
                     {
-                        // Use position-preserving overlay method (keeps original layout)
+                        // Use position-preserving method (keeps original layout)
+                        // Choose generator based on settings
+                        string generatorName = _settings.SelectedPdfGenerator switch
+                        {
+                            PdfGeneratorEngine.ITextSharp => "iTextSharp (Overlay)",
+                            _ => "PdfPig/PdfSharpCore (Overlay)"
+                        };
+                        Log.Information("Using {Generator} PDF generator", generatorName);
+                        
                         try
                         {
-                            _overlayGenerator.CreateTranslatedPdf(inputPath, outputPath, textBlocks);
+                            if (_settings.SelectedPdfGenerator == PdfGeneratorEngine.ITextSharp)
+                            {
+                                _iTextSharpOverlayGenerator.CreateTranslatedPdf(inputPath, outputPath, textBlocks);
+                            }
+                            else
+                            {
+                                _overlayGenerator.CreateTranslatedPdf(inputPath, outputPath, textBlocks);
+                            }
                             
                             // Verify the output
                             if (File.Exists(outputPath) && new FileInfo(outputPath).Length > 1000)

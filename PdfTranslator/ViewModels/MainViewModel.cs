@@ -55,11 +55,36 @@ namespace PdfTranslator.ViewModels
         [ObservableProperty]
         private bool _isDeepLTextMode;
 
+        [ObservableProperty]
+        private bool _isMicrosoftDocumentMode = true;
+
+        [ObservableProperty]
+        private bool _isMicrosoftTextMode;
+
+        // Account Tier Selection
+        [ObservableProperty]
+        private bool _isMicrosoftFreeTier = true;
+
+        [ObservableProperty]
+        private bool _isMicrosoftPaidTier;
+
+        [ObservableProperty]
+        private bool _isDeepLFreeTier = true;
+
+        [ObservableProperty]
+        private bool _isDeepLPaidTier;
+
+        [ObservableProperty]
+        private string _currentTierDescription = "Select an account tier for more details.";
+
         /// <summary>
-        /// OCR options should be hidden when DeepL or Google Cloud is selected
+        /// OCR options should be hidden when DeepL Document mode, Google Cloud, or Microsoft Document mode is selected
         /// because they use Document API which doesn't use OCR - it processes the PDF directly.
         /// </summary>
-        public bool ShouldShowOcrOptions => !IsDeepLSelected && !IsGoogleCloudSelected;
+        public bool ShouldShowOcrOptions => 
+            (!IsDeepLSelected && !IsGoogleCloudSelected && !IsMicrosoftDocumentMode) ||
+            (IsMicrosoftTranslatorSelected && IsMicrosoftTextMode) ||
+            (IsDeepLSelected && IsDeepLTextMode);
 
         public MainViewModel()
         {
@@ -77,6 +102,18 @@ namespace PdfTranslator.ViewModels
             // DeepL mode
             IsDeepLDocumentMode = _settings.DeepLMode == DeepLTranslationMode.DocumentTranslation;
             IsDeepLTextMode = _settings.DeepLMode == DeepLTranslationMode.TextTranslation;
+            
+            // Microsoft mode
+            IsMicrosoftDocumentMode = _settings.MicrosoftMode == MicrosoftTranslationMode.DocumentTranslation;
+            IsMicrosoftTextMode = _settings.MicrosoftMode == MicrosoftTranslationMode.TextTranslation;
+            
+            // Account Tiers
+            IsMicrosoftFreeTier = _settings.MicrosoftAccountTier == AccountTier.Free;
+            IsMicrosoftPaidTier = _settings.MicrosoftAccountTier == AccountTier.Paid;
+            IsDeepLFreeTier = _settings.DeepLAccountTier == AccountTier.Free;
+            IsDeepLPaidTier = _settings.DeepLAccountTier == AccountTier.Paid;
+            
+            UpdateTierDescription();
         }
 
         [RelayCommand]
@@ -191,6 +228,101 @@ namespace PdfTranslator.ViewModels
                 IsAzureOcrSelected = _settings.SelectedOcrEngine == OcrEngine.AzureDocumentIntelligence;
                 IsDeepLDocumentMode = _settings.DeepLMode == DeepLTranslationMode.DocumentTranslation;
                 IsDeepLTextMode = _settings.DeepLMode == DeepLTranslationMode.TextTranslation;
+                IsMicrosoftDocumentMode = _settings.MicrosoftMode == MicrosoftTranslationMode.DocumentTranslation;
+                IsMicrosoftTextMode = _settings.MicrosoftMode == MicrosoftTranslationMode.TextTranslation;
+                
+                // Update tier selections
+                IsMicrosoftFreeTier = _settings.MicrosoftAccountTier == AccountTier.Free;
+                IsMicrosoftPaidTier = _settings.MicrosoftAccountTier == AccountTier.Paid;
+                IsDeepLFreeTier = _settings.DeepLAccountTier == AccountTier.Free;
+                IsDeepLPaidTier = _settings.DeepLAccountTier == AccountTier.Paid;
+                
+                UpdateTierDescription();
+            }
+        }
+
+        [RelayCommand]
+        private void ToggleMicrosoftTier(string tier)
+        {
+            if (tier == "Free")
+            {
+                _settings.MicrosoftAccountTier = AccountTier.Free;
+                _settings.MicrosoftMode = MicrosoftTranslationMode.TextTranslation;
+                IsMicrosoftFreeTier = true;
+                IsMicrosoftPaidTier = false;
+                IsMicrosoftTextMode = true;
+                IsMicrosoftDocumentMode = false;
+                StatusMessage = "Microsoft Free (F0): Text API mode";
+            }
+            else
+            {
+                _settings.MicrosoftAccountTier = AccountTier.Paid;
+                _settings.MicrosoftMode = MicrosoftTranslationMode.DocumentTranslation;
+                IsMicrosoftPaidTier = true;
+                IsMicrosoftFreeTier = false;
+                IsMicrosoftDocumentMode = true;
+                IsMicrosoftTextMode = false;
+                StatusMessage = "Microsoft Paid (S1): Document Translation API mode";
+            }
+            
+            _configService.SaveSettings(_settings);
+            OnPropertyChanged(nameof(ShouldShowOcrOptions));
+            UpdateTierDescription();
+        }
+
+        [RelayCommand]
+        private void ToggleDeepLTier(string tier)
+        {
+            if (tier == "Free")
+            {
+                _settings.DeepLAccountTier = AccountTier.Free;
+                IsDeepLFreeTier = true;
+                IsDeepLPaidTier = false;
+                StatusMessage = "DeepL Free: Limited monthly usage";
+            }
+            else
+            {
+                _settings.DeepLAccountTier = AccountTier.Paid;
+                IsDeepLPaidTier = true;
+                IsDeepLFreeTier = false;
+                StatusMessage = "DeepL Pro: Unlimited usage";
+            }
+            
+            _configService.SaveSettings(_settings);
+            UpdateTierDescription();
+        }
+
+        private void UpdateTierDescription()
+        {
+            if (IsMicrosoftTranslatorSelected)
+            {
+                if (IsMicrosoftFreeTier)
+                {
+                    CurrentTierDescription = "Microsoft Free (F0): Uses Text API. Best for simple A4 documents with basic formatting.";
+                }
+                else
+                {
+                    CurrentTierDescription = "Microsoft Paid (S1): Uses Document Translation API with Azure Blob Storage. Best for complex documents with tables and formatting.";
+                }
+            }
+            else if (IsDeepLSelected)
+            {
+                if (IsDeepLFreeTier)
+                {
+                    CurrentTierDescription = "DeepL Free: Limited to 500,000 characters per month. Good for occasional use.";
+                }
+                else
+                {
+                    CurrentTierDescription = "DeepL Pro: Unlimited usage with full document translation support. Best for heavy usage.";
+                }
+            }
+            else if (IsGoogleCloudSelected)
+            {
+                CurrentTierDescription = "Google Cloud: Document Translation API with built-in OCR. Pay per character translated.";
+            }
+            else
+            {
+                CurrentTierDescription = "Select a translation provider to see tier information.";
             }
         }
 
@@ -223,6 +355,7 @@ namespace PdfTranslator.ViewModels
             
             _configService.SaveSettings(_settings);
             OnPropertyChanged(nameof(ShouldShowOcrOptions));
+            UpdateTierDescription();
             StatusMessage = $"Switched to {provider}";
         }
 
@@ -242,6 +375,28 @@ namespace PdfTranslator.ViewModels
                 IsDeepLTextMode = true;
                 IsDeepLDocumentMode = false;
                 StatusMessage = "DeepL: Text Translation (text extraction mode)";
+            }
+            
+            _configService.SaveSettings(_settings);
+            OnPropertyChanged(nameof(ShouldShowOcrOptions));
+        }
+
+        [RelayCommand]
+        private void ToggleMicrosoftMode(string mode)
+        {
+            if (mode == "Document")
+            {
+                _settings.MicrosoftMode = MicrosoftTranslationMode.DocumentTranslation;
+                IsMicrosoftDocumentMode = true;
+                IsMicrosoftTextMode = false;
+                StatusMessage = "Microsoft: Document Translation (Azure Blob Storage)";
+            }
+            else
+            {
+                _settings.MicrosoftMode = MicrosoftTranslationMode.TextTranslation;
+                IsMicrosoftTextMode = true;
+                IsMicrosoftDocumentMode = false;
+                StatusMessage = "Microsoft: Text Translation (text extraction mode)";
             }
             
             _configService.SaveSettings(_settings);

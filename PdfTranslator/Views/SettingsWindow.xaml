@@ -2,12 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Settings" 
-        Height="600" Width="700"
+        Height="850" Width="750"
         WindowStartupLocation="CenterOwner"
         Background="#F5F5F5"
         FontFamily="Segoe UI"
         FontSize="13"
-        ResizeMode="NoResize">
+        ResizeMode="CanResize"
+        MinHeight="600" MinWidth="650">
     
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -26,72 +27,179 @@
         <!-- Settings Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <!-- DeepL Settings -->
+                
+                <!-- ==================== DEEPL SETTINGS ==================== -->
                 <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
                     <StackPanel>
                         <TextBlock Text="DeepL API" 
                                    FontSize="18" FontWeight="SemiBold"
-                                   Margin="0,0,0,10"/>
+                                   Foreground="#1976D2"
+                                   Margin="0,0,0,15"/>
                         
-                        <TextBlock Text="API Key" 
-                                   FontWeight="Medium"
-                                   Margin="0,0,0,5"/>
-                        <TextBox x:Name="DeepLApiKeyTextBox"
-                                 Padding="8"
-                                 BorderBrush="#CCCCCC"
-                                 BorderThickness="1"
-                                 Margin="0,0,0,10"/>
-
+                        <!-- DeepL Free Account -->
+                        <Border Background="#E3F2FD" Padding="15" CornerRadius="3" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="Free Account" 
+                                           FontWeight="SemiBold"
+                                           Foreground="#1565C0"
+                                           Margin="0,0,0,8"/>
+                                
+                                <TextBlock Text="API Key (Free)" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                <TextBox x:Name="DeepLFreeApiKeyTextBox"
+                                         Padding="8"
+                                         BorderBrush="#90CAF9"
+                                         BorderThickness="1"/>
+                                
+                                <TextBlock Text="Limited to 500,000 characters/month"
+                                           Foreground="#666666"
+                                           FontSize="11"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- DeepL Pro Account -->
+                        <Border Background="#E8F5E9" Padding="15" CornerRadius="3">
+                            <StackPanel>
+                                <TextBlock Text="Pro Account" 
+                                           FontWeight="SemiBold"
+                                           Foreground="#2E7D32"
+                                           Margin="0,0,0,8"/>
+                                
+                                <TextBlock Text="API Key (Pro)" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                <TextBox x:Name="DeepLPaidApiKeyTextBox"
+                                         Padding="8"
+                                         BorderBrush="#A5D6A7"
+                                         BorderThickness="1"/>
+                                
+                                <TextBlock Text="Unlimited characters (pay per use), Document translation available"
+                                           Foreground="#666666"
+                                           FontSize="11"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
                         <TextBlock TextWrapping="Wrap" 
                                    Foreground="#666666"
-                                   FontSize="12">
-                            Get your free API key from https://www.deepl.com/pro-api
-                            <LineBreak/>
-                            Free tier: 500,000 characters/month
+                                   FontSize="12"
+                                   Margin="0,10,0,0">
+                            Get your API key from: https://www.deepl.com/pro-api
                         </TextBlock>
                     </StackPanel>
                 </Border>
 
-                <!-- Microsoft Translator Settings -->
+                <!-- ==================== MICROSOFT TRANSLATOR SETTINGS ==================== -->
                 <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
                     <StackPanel>
                         <TextBlock Text="Microsoft Translator" 
                                    FontSize="18" FontWeight="SemiBold"
-                                   Margin="0,0,0,10"/>
+                                   Foreground="#1976D2"
+                                   Margin="0,0,0,15"/>
                         
-                        <TextBlock Text="API Key" 
-                                   FontWeight="Medium"
-                                   Margin="0,0,0,5"/>
-                        <TextBox x:Name="MicrosoftApiKeyTextBox"
-                                 Padding="8"
-                                 BorderBrush="#CCCCCC"
-                                 BorderThickness="1"
-                                 Margin="0,0,0,5"/>
-
-                        <TextBlock Text="Region" 
-                                   FontWeight="Medium"
-                                   Margin="0,10,0,5"/>
-                        <TextBox x:Name="MicrosoftRegionTextBox"
-                                 Padding="8"
-                                 BorderBrush="#CCCCCC"
-                                 BorderThickness="1"
-                                 Margin="0,0,0,10"/>
-
+                        <!-- Microsoft Free Account (F0) -->
+                        <Border Background="#E3F2FD" Padding="15" CornerRadius="3" Margin="0,0,0,10">
+                            <StackPanel>
+                                <TextBlock Text="Free Account (F0 Tier) - Text API Only" 
+                                           FontWeight="SemiBold"
+                                           Foreground="#1565C0"
+                                           Margin="0,0,0,8"/>
+                                
+                                <TextBlock Text="API Key" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                <TextBox x:Name="MicrosoftFreeApiKeyTextBox"
+                                         Padding="8"
+                                         BorderBrush="#90CAF9"
+                                         BorderThickness="1"
+                                         Margin="0,0,0,8"/>
+                                
+                                <TextBlock Text="Region" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                <TextBox x:Name="MicrosoftFreeRegionTextBox"
+                                         Padding="8"
+                                         BorderBrush="#90CAF9"
+                                         BorderThickness="1"
+                                         Text="global"/>
+                                
+                                <TextBlock Text="2M characters/month free. Uses Text Translation API with overlay method."
+                                           Foreground="#666666"
+                                           FontSize="11"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Microsoft Paid Account (S1) -->
+                        <Border Background="#E8F5E9" Padding="15" CornerRadius="3">
+                            <StackPanel>
+                                <TextBlock Text="Paid Account (S1 Tier) - Document Translation API" 
+                                           FontWeight="SemiBold"
+                                           Foreground="#2E7D32"
+                                           Margin="0,0,0,8"/>
+                                
+                                <TextBlock Text="API Key" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                <TextBox x:Name="MicrosoftPaidApiKeyTextBox"
+                                         Padding="8"
+                                         BorderBrush="#A5D6A7"
+                                         BorderThickness="1"
+                                         Margin="0,0,0,8"/>
+                                
+                                <TextBlock Text="Endpoint" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                <TextBox x:Name="MicrosoftPaidEndpointTextBox"
+                                         Padding="8"
+                                         BorderBrush="#A5D6A7"
+                                         BorderThickness="1"
+                                         Margin="0,0,0,8"/>
+                                
+                                <TextBlock Text="Azure Storage Connection String" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                <TextBox x:Name="MicrosoftPaidStorageConnectionStringTextBox"
+                                         Padding="8"
+                                         BorderBrush="#A5D6A7"
+                                         BorderThickness="1"/>
+                                
+                                <TextBlock Text="Full Document Translation with OCR support. Preserves PDF formatting."
+                                           Foreground="#666666"
+                                           FontSize="11"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <Button x:Name="TestMicrosoftConnectionButton"
+                                Content="Test Microsoft Connection"
+                                Click="TestMicrosoftConnection_Click"
+                                Padding="10,8"
+                                Background="#2196F3"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Cursor="Hand"
+                                Margin="0,10,0,0"/>
+                        
                         <TextBlock TextWrapping="Wrap" 
                                    Foreground="#666666"
-                                   FontSize="12">
-                            Create a Translator resource in Azure Portal: https://portal.azure.com
+                                   FontSize="12"
+                                   Margin="0,10,0,0">
+                            Create resources in Azure Portal: https://portal.azure.com
                             <LineBreak/>
-                            Free tier: 2M characters/month
+                            Endpoint example: https://your-translator.cognitiveservices.azure.com/
                         </TextBlock>
                     </StackPanel>
                 </Border>
 
-                <!-- Google Cloud Translation Settings -->
+                <!-- ==================== GOOGLE CLOUD SETTINGS ==================== -->
                 <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
                     <StackPanel>
                         <TextBlock Text="Google Cloud Translation" 
                                    FontSize="18" FontWeight="SemiBold"
+                                   Foreground="#1976D2"
                                    Margin="0,0,0,10"/>
                         
                         <TextBlock Text="Service Account JSON File Path" 
@@ -135,17 +243,16 @@
                             2. Enable Cloud Translation API
                             <LineBreak/>
                             3. Create a Service Account and download the JSON key file
-                            <LineBreak/>
-                            Free tier: 500,000 characters/month
                         </TextBlock>
                     </StackPanel>
                 </Border>
 
-                <!-- Azure Document Intelligence Settings -->
+                <!-- ==================== AZURE DOCUMENT INTELLIGENCE ==================== -->
                 <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
                     <StackPanel>
                         <TextBlock Text="Azure Document Intelligence (OCR)" 
                                    FontSize="18" FontWeight="SemiBold"
+                                   Foreground="#1976D2"
                                    Margin="0,0,0,10"/>
                         
                         <TextBlock Text="Endpoint" 
@@ -170,17 +277,16 @@
                                    Foreground="#666666"
                                    FontSize="12">
                             Create a Document Intelligence resource: https://portal.azure.com
-                            <LineBreak/>
-                            Free tier: 500 pages/month
                         </TextBlock>
                     </StackPanel>
                 </Border>
 
-                <!-- Tesseract Info -->
-                <Border Background="White" Padding="20" CornerRadius="3">
+                <!-- ==================== TESSERACT INFO ==================== -->
+                <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
                     <StackPanel>
                         <TextBlock Text="Tesseract OCR" 
                                    FontSize="18" FontWeight="SemiBold"
+                                   Foreground="#1976D2"
                                    Margin="0,0,0,10"/>
 
                         <TextBlock TextWrapping="Wrap" 
@@ -192,6 +298,45 @@
                             https://github.com/tesseract-ocr/tessdata
                             <LineBreak/><LineBreak/>
                             Place it in: %APPDATA%\PdfTranslator\tessdata\
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <!-- ==================== PDF GENERATOR ENGINE ==================== -->
+                <Border Background="White" Padding="20" CornerRadius="3">
+                    <StackPanel>
+                        <TextBlock Text="PDF Processing (Text Mode Only)" 
+                                   FontSize="18" FontWeight="SemiBold"
+                                   Foreground="#1976D2"
+                                   Margin="0,0,0,15"/>
+
+                        <TextBlock Text="PDF Generator Engine" 
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,8"/>
+                        
+                        <RadioButton x:Name="PdfPigRadio" 
+                                     Content="PdfPig + PdfSharpCore (Apache 2.0)" 
+                                     Margin="0,0,0,5"/>
+                        <TextBlock Text="Original method - overlays translated text on PDF"
+                                   Foreground="#666666"
+                                   FontSize="12"
+                                   Margin="20,0,0,10"/>
+                        
+                        <RadioButton x:Name="ITextSharpRadio" 
+                                     Content="iTextSharp (LGPLv2) - Recommended" 
+                                     Margin="0,0,0,5"
+                                     IsChecked="True"/>
+                        <TextBlock Text="Better rotation/landscape handling"
+                                   Foreground="#4CAF50"
+                                   FontSize="12"
+                                   Margin="20,0,0,10"/>
+
+                        <TextBlock TextWrapping="Wrap" 
+                                   Foreground="#888888"
+                                   FontStyle="Italic"
+                                   FontSize="11">
+                            Note: These settings only apply when using Text Translation mode.
+                            Document Translation APIs handle PDFs directly.
                         </TextBlock>
                     </StackPanel>
                 </Border>

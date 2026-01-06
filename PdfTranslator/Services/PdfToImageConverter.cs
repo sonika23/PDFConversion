@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using PdfiumViewer;
 using Serilog;
 
@@ -15,10 +16,53 @@ namespace PdfTranslator.Services
     {
         private readonly ILogger _logger;
         private const int DefaultDpi = 300; // High DPI for better OCR accuracy
+        private static bool _pdfiumInitialized = false;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool SetDllDirectory(string lpPathName);
 
         public PdfToImageConverter(ILogger logger)
         {
             _logger = logger;
+            EnsurePdfiumInitialized();
+        }
+
+        /// <summary>
+        /// Ensures the pdfium.dll can be found by setting the DLL search path
+        /// </summary>
+        private void EnsurePdfiumInitialized()
+        {
+            if (_pdfiumInitialized) return;
+
+            try
+            {
+                // Get the directory where the application is running
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                
+                // Try x64 folder first (most common for 64-bit apps)
+                string x64Path = Path.Combine(baseDir, "x64");
+                if (Directory.Exists(x64Path) && File.Exists(Path.Combine(x64Path, "pdfium.dll")))
+                {
+                    SetDllDirectory(x64Path);
+                    _logger.Information("Set DLL directory to: {Path}", x64Path);
+                }
+                else
+                {
+                    // Try x86 folder
+                    string x86Path = Path.Combine(baseDir, "x86");
+                    if (Directory.Exists(x86Path) && File.Exists(Path.Combine(x86Path, "pdfium.dll")))
+                    {
+                        SetDllDirectory(x86Path);
+                        _logger.Information("Set DLL directory to: {Path}", x86Path);
+                    }
+                }
+
+                _pdfiumInitialized = true;
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Failed to set DLL directory for pdfium");
+            }
         }
 
         /// <summary>

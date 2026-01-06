@@ -27,6 +27,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -102,6 +103,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <TextBlock Grid.Row="0" Text="Translation &amp; OCR Settings" 
@@ -126,19 +128,53 @@
                                                CommandParameter="Microsoft"
                                                Margin="0,0,0,5"/>
                                     
-                                    <RadioButton Content="DeepL (Document API)" 
+                                    <!-- Microsoft Account Tier Selection -->
+                                    <StackPanel Margin="20,0,0,5"
+                                                Visibility="{Binding IsMicrosoftTranslatorSelected, Converter={StaticResource BoolToVisibility}}">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
+                                            <RadioButton Content="Free (F0)" 
+                                                       IsChecked="{Binding IsMicrosoftFreeTier}"
+                                                       Command="{Binding ToggleMicrosoftTierCommand}"
+                                                       CommandParameter="Free"
+                                                       FontSize="11"
+                                                       Margin="0,0,10,0"/>
+                                            <RadioButton Content="Paid (S1)" 
+                                                       IsChecked="{Binding IsMicrosoftPaidTier}"
+                                                       Command="{Binding ToggleMicrosoftTierCommand}"
+                                                       CommandParameter="Paid"
+                                                       FontSize="11"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    
+                                    <RadioButton Content="DeepL" 
                                                IsChecked="{Binding IsDeepLSelected}"
                                                Command="{Binding ToggleTranslationProviderCommand}"
                                                CommandParameter="DeepL"
-                                               ToolTip="Uses DeepL Document API - best formatting preservation"/>
+                                               Margin="0,0,0,5"/>
                                     
-                                    <!-- Google Cloud option hidden for now - can be re-enabled if needed
-                                    <RadioButton Content="Google Cloud (Document API)" 
+                                    <!-- DeepL Account Tier Selection -->
+                                    <StackPanel Margin="20,0,0,5"
+                                                Visibility="{Binding IsDeepLSelected, Converter={StaticResource BoolToVisibility}}">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
+                                            <RadioButton Content="Free" 
+                                                       IsChecked="{Binding IsDeepLFreeTier}"
+                                                       Command="{Binding ToggleDeepLTierCommand}"
+                                                       CommandParameter="Free"
+                                                       FontSize="11"
+                                                       Margin="0,0,10,0"/>
+                                            <RadioButton Content="Pro" 
+                                                       IsChecked="{Binding IsDeepLPaidTier}"
+                                                       Command="{Binding ToggleDeepLTierCommand}"
+                                                       CommandParameter="Paid"
+                                                       FontSize="11"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    
+                                    <RadioButton Content="Google Cloud" 
                                                IsChecked="{Binding IsGoogleCloudSelected}"
                                                Command="{Binding ToggleTranslationProviderCommand}"
                                                CommandParameter="Google"
-                                               ToolTip="Uses Google Cloud Document Translation - native OCR support"/>
-                                    -->
+                                               ToolTip="Uses Google Cloud Document Translation"/>
                                 </StackPanel>
                             </StackPanel>
 
@@ -175,11 +211,21 @@
                                            FontSize="11" Foreground="#888888" FontStyle="Italic"/>
                             </StackPanel>
                         </Grid>
+                        
+                        <!-- Account Tier Info Panel -->
+                        <Border Grid.Row="2" Background="#FFF3E0" Padding="10" CornerRadius="3" Margin="0,5,0,0">
+                            <TextBlock x:Name="TierInfoText" 
+                                       Text="{Binding CurrentTierDescription}"
+                                       TextWrapping="Wrap"
+                                       FontSize="11"
+                                       Foreground="#E65100"/>
+                        </Border>
 
-                        <TextBlock Grid.Row="2" 
+                        <TextBlock Grid.Row="3" 
                                    Text="{Binding CharactersTranslated, StringFormat='Characters translated: {0:N0}'}"
                                    Foreground="#666666"
-                                   FontSize="12"/>
+                                   FontSize="12"
+                                   Margin="0,10,0,0"/>
                     </Grid>
                 </Border>
 
@@ -255,6 +301,31 @@
                            Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"
                            FontStyle="Italic"/>
             </Grid>
+        </Border>
+        
+        <!-- Footer Instructions -->
+        <Border Grid.Row="4" Background="#F5F5F5" Padding="15" CornerRadius="3" Margin="0,10,0,0">
+            <StackPanel>
+                <TextBlock Text="Account Tier Guide" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,8"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="Microsoft Translator" FontWeight="Medium" FontSize="11" Foreground="#1976D2"/>
+                        <TextBlock Text="• Free (F0): Text API - simple A4 documents" FontSize="10" Foreground="#666" Margin="0,2"/>
+                        <TextBlock Text="• Paid (S1): Document API - complex PDFs with tables" FontSize="10" Foreground="#666" Margin="0,2"/>
+                    </StackPanel>
+                    
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                        <TextBlock Text="DeepL" FontWeight="Medium" FontSize="11" Foreground="#1976D2"/>
+                        <TextBlock Text="• Free: Limited monthly characters" FontSize="10" Foreground="#666" Margin="0,2"/>
+                        <TextBlock Text="• Pro: Unlimited usage, full document support" FontSize="10" Foreground="#666" Margin="0,2"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

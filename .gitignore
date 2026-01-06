@@ -96,6 +96,7 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
+*.pdf
 
 # Chutzpah Test files
 _Chutzpah*
@@ -358,23 +359,6 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-# Fody - auto-generated XML schema
-FodyWeavers.xsd
-/PaperlessProperty.API/docs/Admin-API-Endpoints.md
-/PaperlessProperty.API/docs/Drag-Drop-Field-Sections-UI-Implementation.md
-/PaperlessProperty.API/docs/Azure-BlobStorage-Configuration.md
-/PaperlessProperty.API/docs/EFCore-PowerTools-Setup-Guide.md
-/PaperlessProperty.API/docs/Property-Attachment-Implementation-Summary.md
-/PaperlessProperty.API/docs/PropertyAttachment-API-Documentation.md
-/PaperlessProperty.API/docs/PropertyAttachmentMigration.sql
-/PaperlessProperty.API/docs/Quick-Start-Guide.md
-/PaperlessProperty.API/docs/Document-Template-API-Usage-Examples.md
-/PaperlessProperty.API/docs/Document-Template-Implementation-Summary.md
-/PaperlessProperty.API/docs/Implementation-Checklist.md
-/PaperlessProperty.API/docs/Bulk-Field-Mapping-Upsert-API.md
-/PaperlessProperty.API/docs/Field-Mapping-UI-Implementation-Guide.md
-/PaperlessProperty.API/docs/Admin-Document-Rules-API-Documentation.md
-/PaperlessProperty.API/docs/Client-Intake-Endpoint-Updates.md
 
 1. ДС 255500_0067_translated - Microsoft Translation Provider.pdf
 1. ДС 255500_0067_translated_20251229_153329 - DeepL Provider.pdf
@@ -406,3 +390,33 @@ PdfTranslator/NEXT_STEPS.md
 Installer/Output/PdfTranslator-Setup.wixpdb
 Installer/Output/PdfTranslator-Setup.msi
 Installer/build-installer.bat
+1. ДС 255500_0067_translated_20260102_141036_Microsoft.pdf
+1. ДС 255500_0067_translated_20260102_141210_Microsoft.pdf
+1. ДС 255500_0067_translated_20260102_141216_Google.pdf
+1. ДС 255500_0067_translated_20260102_144856_Microsoft.pdf
+1. ДС 255500_0067_translated_20260102_155422_Microsoft.pdf
+1. ДС 255500_0067_translated_20260102_155735_Microsoft.pdf
+1. ДС 255500_0067_translated_20260102_155805_Microsoft.pdf
+13. Atlantis Group of Companies LLC Balance sheet  Бухгалтерская отчетность за Январь _translated_20260102_155358_Microsoft.pdf
+26.02.2025 О повышении ставки ХТФ_translated_20251230_154004_Microsoft.pdf
+26.02.2025 О повышении ставки ХТФ_translated_20260102_141243_Google.pdf
+26.02.2025 О повышении ставки ХТФ_translated_20260102_141457_DeepL.pdf
+26.02.2025 О повышении ставки ХТФ_Translated_20260105_224809_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20251230_143330_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20251230_144753_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_140839_Google.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_141015_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_144917_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_153352_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_155330_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_155833_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_155856_Google.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_155911_DeepL.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_163209_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_163342_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_163400_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_163611_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_translated_20260102_163657_Microsoft.pdf
+ВМ СБЕР Ссудная задолженность 17.11.2025_Translated_20260102_224711_Microsoft.pdf
+Выписка АХБ 01.01.2025-22.12.2025_translated_20260102_141615_DeepL.pdf
+Выписка АХБ 01.01.2025-22.12.2025_Translated_20260102_225055_Microsoft.pdf

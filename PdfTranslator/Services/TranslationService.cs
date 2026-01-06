@@ -17,10 +17,10 @@ namespace PdfTranslator.Services
         {
             _currentProvider = _settings.SelectedTranslationProvider switch
             {
-                TranslationProvider.DeepL => new DeepLProvider(_settings.DeepLApiKey),
+                TranslationProvider.DeepL => new DeepLProvider(_settings.GetActiveDeepLApiKey()),
                 TranslationProvider.MicrosoftTranslator => new MicrosoftTranslatorProvider(
-                    _settings.AzureTranslatorKey, 
-                    _settings.AzureTranslatorRegion),
+                    _settings.GetActiveMicrosoftApiKey(), 
+                    _settings.GetActiveMicrosoftRegion()),
                 _ => null
             };
         }

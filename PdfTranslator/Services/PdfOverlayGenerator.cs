@@ -11,7 +11,8 @@ using Serilog;
 namespace PdfTranslator.Services
 {
     /// <summary>
-    /// Generates translated PDF files while preserving original layout including tables
+    /// Generates translated PDF files while preserving original layout including tables.
+    /// Uses a simple coordinate transformation approach.
     /// </summary>
     public class PdfOverlayGenerator
     {
@@ -56,16 +57,11 @@ namespace PdfTranslator.Services
                         int pageNum1Based = pageIndex + 1;
                         var page = document.Pages[pageIndex];
                         
-                        // Get page rotation and log for debugging
-                        int rotation = page.Rotate;
-                        
-                        // PdfSharpCore's XGraphics works in the "user space" which accounts for rotation
-                        // Use the page dimensions directly - XGraphics handles coordinate transformation
-                        double pageHeight = page.Height.Point;
+                        // Get page dimensions
                         double pageWidth = page.Width.Point;
+                        double pageHeight = page.Height.Point;
                         
-                        _logger.Information("Page {Page}: Rotation={Rotation}°, Physical size: {Width}x{Height}",
-                            pageNum1Based, rotation, pageWidth, pageHeight);
+                        _logger.Information("Page {Page}: Size={W}x{H}", pageNum1Based, pageWidth, pageHeight);
 
                         // Get blocks for this page (check both 0-based and 1-based)
                         List<TextBlock>? pageBlocks = null;
@@ -89,13 +85,24 @@ namespace PdfTranslator.Services
                         // Create graphics object for this page - draw on top of existing content
                         using (var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append))
                         {
+                            int drawnCount = 0;
+                            int skippedCount = 0;
+                            
                             foreach (var block in pageBlocks)
                             {
                                 if (block.BoundingBox == null || string.IsNullOrEmpty(block.TranslatedText))
+                                {
+                                    skippedCount++;
                                     continue;
+                                }
 
-                                DrawTranslatedCell(gfx, block, pageHeight, pageWidth, rotation);
+                                // Draw cell using simple coordinate conversion
+                                DrawTranslatedCell(gfx, block, pageHeight);
+                                drawnCount++;
                             }
+                            
+                            _logger.Information("Page {Page}: Drew {Drawn} cells, skipped {Skipped} cells", 
+                                pageNum1Based, drawnCount, skippedCount);
                         }
                     }
 
@@ -124,29 +131,28 @@ namespace PdfTranslator.Services
 
         /// <summary>
         /// Draws a translated text cell at the exact position of the original.
-        /// Preserves font size as closely as possible to the source document.
+        /// PdfPig coordinates: bottom-left origin, Y increases upward
+        /// XGraphics coordinates: top-left origin, Y increases downward
         /// </summary>
-        private void DrawTranslatedCell(XGraphics gfx, TextBlock block, double pageHeight, double pageWidth, int rotation = 0)
+        private void DrawTranslatedCell(XGraphics gfx, TextBlock block, double pageHeight)
         {
             var box = block.BoundingBox!;
             
-            // Both PdfPig and PdfSharpCore XGraphics work in the "visual" coordinate space
-            // (the page as you see it when viewing). The only difference is:
-            // - PdfPig: origin at bottom-left, Y increases upward
-            // - XGraphics: origin at top-left, Y increases downward
-            // So we just need to flip the Y-axis for ALL pages, regardless of rotation.
+            // Convert from PdfPig coordinates (bottom-left origin) to XGraphics coordinates (top-left origin)
+            // PdfPig: Y is distance from bottom of page
+            // XGraphics: Y is distance from top of page
+            // So: xgraphics_Y = pageHeight - pdfpig_Y - box_height
             
-            // Simple Y-axis flip: convert from bottom-left to top-left origin
             double drawX = box.X;
             double drawY = pageHeight - box.Y - box.Height;
             double drawWidth = box.Width;
             double drawHeight = box.Height;
 
             // Add padding to white box to fully cover original text
-            double padding = 3;
+            double padding = 2;
             double whiteBoxX = Math.Max(0, drawX - padding);
             double whiteBoxY = Math.Max(0, drawY - padding);
-            double whiteBoxWidth = Math.Min(drawWidth + (2 * padding), pageWidth - whiteBoxX);
+            double whiteBoxWidth = drawWidth + (2 * padding);
             double whiteBoxHeight = drawHeight + (2 * padding);
 
             // Draw white rectangle to cover original text
@@ -156,28 +162,15 @@ namespace PdfTranslator.Services
             if (string.IsNullOrWhiteSpace(translatedText))
                 return;
 
-            // FONT SIZE STRATEGY:
-            // 1. Use the original document's font size as the PRIMARY source
-            // 2. Only reduce font size as a LAST RESORT, and never below 7pt (readable minimum)
-            // 3. If text doesn't fit, prefer truncation over unreadable tiny fonts
-            
+            // Font size - use original or estimate from cell height
             double originalFontSize = block.FontSize;
-            
-            // Validate original font size - if it seems unreasonable, calculate from bounding box
             if (originalFontSize <= 0 || originalFontSize > 72)
             {
-                // Estimate font size from cell height (typical font height is ~70-80% of point size)
-                originalFontSize = box.Height * 0.85;
+                originalFontSize = drawHeight * 0.85;
             }
-            
-            // Ensure font size is within readable bounds
-            // Minimum 7pt for readability, maximum 24pt for normal document text
-            double fontSize = Math.Max(7, Math.Min(originalFontSize, 24));
-            
-            // Round to nearest 0.5pt for consistency
-            fontSize = Math.Round(fontSize * 2) / 2;
+            double fontSize = Math.Max(6, Math.Min(originalFontSize, 24));
 
-            // Determine font style based on source document analysis
+            // Font style
             XFontStyle fontStyle = XFontStyle.Regular;
             if (block.IsBold && block.IsItalic)
                 fontStyle = XFontStyle.BoldItalic;
@@ -186,94 +179,46 @@ namespace PdfTranslator.Services
             else if (block.IsItalic)
                 fontStyle = XFontStyle.Italic;
 
-            // Use font family from source document, fall back to Arial
-            string fontFamily = !string.IsNullOrEmpty(block.FontFamily) ? block.FontFamily : "Arial";
-            
-            XFont font = new XFont(fontFamily, fontSize, fontStyle);
-            XSize textSize = gfx.MeasureString(translatedText, font);
-
-            // Check if text fits in the available width (using transformed dimensions)
-            double availableWidth = drawWidth;
-            
-            if (textSize.Width > availableWidth && availableWidth > 20)
+            string fontFamily = "Arial";
+            XFont font;
+            try
             {
-                // Text doesn't fit - try to reduce font size but NOT below 7pt
-                double requiredRatio = availableWidth / textSize.Width;
-                double reducedFontSize = fontSize * requiredRatio * 0.95; // 5% margin
-                
-                // CRITICAL: Never go below 7pt - prefer truncation over unreadable text
-                if (reducedFontSize >= 7)
+                font = new XFont(fontFamily, fontSize, fontStyle);
+            }
+            catch
+            {
+                font = new XFont("Arial", fontSize, XFontStyle.Regular);
+            }
+            
+            // Adjust font size if text doesn't fit
+            XSize textSize = gfx.MeasureString(translatedText, font);
+            if (textSize.Width > drawWidth && drawWidth > 20)
+            {
+                double requiredRatio = drawWidth / textSize.Width;
+                double reducedFontSize = fontSize * requiredRatio * 0.95;
+                if (reducedFontSize >= 6)
                 {
-                    fontSize = Math.Round(reducedFontSize * 2) / 2; // Round to 0.5pt
-                    font = new XFont(fontFamily, fontSize, fontStyle);
-                }
-                else
-                {
-                    // Text won't fit even at 7pt - use 7pt and let it overflow slightly
-                    // This is better than unreadable tiny text
-                    fontSize = 7;
-                    font = new XFont(fontFamily, fontSize, fontStyle);
-                    
-                    // Optionally truncate very long text that won't fit
-                    textSize = gfx.MeasureString(translatedText, font);
-                    if (textSize.Width > availableWidth * 1.5) // Allow 50% overflow max
+                    fontSize = reducedFontSize;
+                    try
                     {
-                        translatedText = TruncateTextToFit(gfx, translatedText, font, availableWidth * 1.3);
+                        font = new XFont(fontFamily, fontSize, fontStyle);
+                    }
+                    catch
+                    {
+                        font = new XFont("Arial", fontSize, XFontStyle.Regular);
                     }
                 }
             }
-
-            // Calculate text position using transformed coordinates
-            // Horizontal: Left-aligned at transformed position
-            double textX = drawX;
             
-            // Vertical: Center the text vertically in the cell
-            double textY = drawY + (drawHeight + fontSize * 0.75) / 2;
-            
-            // Use detected text color from source (default is black: 0,0,0)
+            // Text color
             XBrush textBrush = new XSolidBrush(XColor.FromArgb(
-                block.TextColorR, 
-                block.TextColorG, 
-                block.TextColorB));
+                block.TextColorR, block.TextColorG, block.TextColorB));
+
+            // Draw text - position text at the top-left of the cell, vertically offset for baseline
+            double textX = drawX;
+            double textY = drawY + fontSize; // Move down by font size since DrawString uses baseline
             
             gfx.DrawString(translatedText, font, textBrush, textX, textY);
-        }
-
-        /// <summary>
-        /// Truncates text to fit within specified width, adding ellipsis
-        /// </summary>
-        private string TruncateTextToFit(XGraphics gfx, string text, XFont font, double maxWidth)
-        {
-            if (string.IsNullOrEmpty(text))
-                return text;
-
-            string ellipsis = "...";
-            XSize ellipsisSize = gfx.MeasureString(ellipsis, font);
-            double targetWidth = maxWidth - ellipsisSize.Width;
-
-            if (targetWidth <= 0)
-                return ellipsis;
-
-            // Binary search for optimal truncation point
-            int left = 0;
-            int right = text.Length;
-            
-            while (left < right)
-            {
-                int mid = (left + right + 1) / 2;
-                string testText = text.Substring(0, mid);
-                XSize size = gfx.MeasureString(testText, font);
-                
-                if (size.Width <= targetWidth)
-                    left = mid;
-                else
-                    right = mid - 1;
-            }
-
-            if (left < text.Length)
-                return text.Substring(0, left) + ellipsis;
-            
-            return text;
         }
 
         /// <summary>

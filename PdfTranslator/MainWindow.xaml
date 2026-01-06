@@ -1,0 +1,260 @@
+﻿<Window x:Class="PdfTranslator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PdfTranslator"
+        xmlns:viewmodels="clr-namespace:PdfTranslator.ViewModels"
+        mc:Ignorable="d"
+        Title="PDF Translator - Russian to English" 
+        Height="650" Width="900"
+        MinHeight="600" MinWidth="800"
+        Background="#F5F5F5"
+        FontFamily="Segoe UI"
+        FontSize="13">
+    
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+    </Window.Resources>
+    
+    <Window.DataContext>
+        <viewmodels:MainViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2196F3" Padding="16" CornerRadius="3" Margin="0,0,0,20">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Vertical">
+                    <TextBlock Text="PDF Translator" 
+                               FontSize="24" FontWeight="Medium"
+                               Foreground="White"/>
+                    <TextBlock Text="Translate Russian PDF documents to English" 
+                               FontSize="14"
+                               Foreground="White" Opacity="0.8"/>
+                </StackPanel>
+
+                <Button Grid.Column="1" 
+                        Content="⚙"
+                        Command="{Binding OpenSettingsCommand}"
+                        ToolTip="Settings"
+                        Width="40" Height="40"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="White"
+                        FontSize="20"
+                        Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- File Selection -->
+                <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="Select PDF File" 
+                                   FontSize="18" FontWeight="SemiBold"
+                                   Margin="0,0,0,10"/>
+                        
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="0"
+                                     Text="{Binding SelectedFilePath, Mode=TwoWay}"
+                                     IsReadOnly="True"
+                                     Margin="0,0,10,0"
+                                     Padding="8"
+                                     BorderBrush="#CCCCCC"
+                                     BorderThickness="1"/>
+
+                            <Button Grid.Column="1"
+                                    Content="Browse"
+                                    Command="{Binding SelectFileCommand}"
+                                    Padding="15,8"
+                                    Background="#2196F3"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Cursor="Hand"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Provider Selection -->
+                <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Translation &amp; OCR Settings" 
+                                   FontSize="18" FontWeight="SemiBold"
+                                   Margin="0,0,0,15"/>
+
+                        <Grid Grid.Row="1" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="Translation Provider" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                
+                                <StackPanel Orientation="Vertical">
+                                    <RadioButton Content="Microsoft Translator" 
+                                               IsChecked="{Binding IsMicrosoftTranslatorSelected}"
+                                               Command="{Binding ToggleTranslationProviderCommand}"
+                                               CommandParameter="Microsoft"
+                                               Margin="0,0,0,5"/>
+                                    
+                                    <RadioButton Content="DeepL (Document API)" 
+                                               IsChecked="{Binding IsDeepLSelected}"
+                                               Command="{Binding ToggleTranslationProviderCommand}"
+                                               CommandParameter="DeepL"
+                                               ToolTip="Uses DeepL Document API - best formatting preservation"/>
+                                    
+                                    <!-- Google Cloud option hidden for now - can be re-enabled if needed
+                                    <RadioButton Content="Google Cloud (Document API)" 
+                                               IsChecked="{Binding IsGoogleCloudSelected}"
+                                               Command="{Binding ToggleTranslationProviderCommand}"
+                                               CommandParameter="Google"
+                                               ToolTip="Uses Google Cloud Document Translation - native OCR support"/>
+                                    -->
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- OCR Engine Options - Hidden when DeepL Document API is selected -->
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0"
+                                        Visibility="{Binding ShouldShowOcrOptions, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="OCR Engine" 
+                                           FontWeight="Medium"
+                                           Margin="0,0,0,5"/>
+                                
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Content="Tesseract (Free)" 
+                                               IsChecked="{Binding IsTesseractSelected}"
+                                               Command="{Binding ToggleOcrEngineCommand}"
+                                               CommandParameter="Tesseract"
+                                               Margin="0,0,15,0"/>
+                                    
+                                    <RadioButton Content="Azure Document Intelligence" 
+                                               IsChecked="{Binding IsAzureOcrSelected}"
+                                               Command="{Binding ToggleOcrEngineCommand}"
+                                               CommandParameter="Azure"/>
+                                </StackPanel>
+                                <TextBlock Text="(Used for scanned PDFs)" 
+                                           FontSize="10" Foreground="#888888" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            
+                            <!-- Message when OCR is not applicable -->
+                            <StackPanel Grid.Column="1" Margin="10,0,0,0"
+                                        Visibility="{Binding ShouldShowOcrOptions, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                <TextBlock Text="OCR Engine" 
+                                           FontWeight="Medium" Foreground="#999999"
+                                           Margin="0,0,0,5"/>
+                                <TextBlock Text="Not used - Document API processes PDF directly" 
+                                           FontSize="11" Foreground="#888888" FontStyle="Italic"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Grid.Row="2" 
+                                   Text="{Binding CharactersTranslated, StringFormat='Characters translated: {0:N0}'}"
+                                   Foreground="#666666"
+                                   FontSize="12"/>
+                    </Grid>
+                </Border>
+
+                <!-- Process Button -->
+                <Button Grid.Row="2"
+                        Command="{Binding ProcessPdfCommand}"
+                        IsEnabled="{Binding IsProcessing, Converter={StaticResource InverseBooleanConverter}}"
+                        Content="Translate PDF"
+                        Height="50"
+                        FontSize="16"
+                        FontWeight="Medium"
+                        Background="#4CAF50"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Margin="0,0,0,15"/>
+
+                <!-- Info Panel -->
+                <Border Background="White" Padding="20" CornerRadius="3">
+                    <StackPanel>
+                        <TextBlock Text="How it works:" 
+                                   FontSize="18" FontWeight="SemiBold"
+                                   Margin="0,0,0,10"/>
+                        
+                        <TextBlock TextWrapping="Wrap" Margin="0,5">
+                            <Run Text="• Select a PDF file in Russian language"/>
+                        </TextBlock>
+
+                        <TextBlock TextWrapping="Wrap" Margin="0,5">
+                            <Run Text="• Choose your translation provider (requires API keys in Settings)"/>
+                        </TextBlock>
+
+                        <TextBlock TextWrapping="Wrap" Margin="0,5">
+                            <Run Text="• For scanned PDFs, select OCR engine (Tesseract is free)"/>
+                        </TextBlock>
+
+                        <TextBlock TextWrapping="Wrap" Margin="0,5">
+                            <Run Text="• Click 'Translate PDF' to start processing"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Progress Bar -->
+        <ProgressBar Grid.Row="2"
+                     Value="{Binding ProgressValue}"
+                     Maximum="{Binding ProgressMaximum}"
+                     Height="8"
+                     Margin="0,10"
+                     Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3" Background="#E3F2FD" Padding="12" CornerRadius="3">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="ℹ" 
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Margin="0,0,8,0"/>
+                
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding StatusMessage}"
+                           VerticalAlignment="Center"/>
+
+                <TextBlock Grid.Column="2"
+                           Text="Processing..."
+                           Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           FontStyle="Italic"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

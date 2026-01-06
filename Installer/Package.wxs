@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <Package Name="PDF Translator"
+           Manufacturer="PDF Translator"
+           Version="1.0.0.0"
+           UpgradeCode="A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
+           Compressed="yes"
+           InstallerVersion="500">
+
+    <SummaryInformation Description="PDF Translator - Russian to English PDF Translation Tool" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Installation directory -->
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="PDF Translator" />
+    </StandardDirectory>
+
+    <!-- Start Menu -->
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ProgramMenuDir" Name="PDF Translator" />
+    </StandardDirectory>
+
+    <!-- Desktop -->
+    <StandardDirectory Id="DesktopFolder" />
+
+    <!-- Main Feature -->
+    <Feature Id="ProductFeature" Title="PDF Translator" Level="1">
+      <ComponentGroupRef Id="PublishFiles" />
+      <ComponentRef Id="StartMenuShortcut" />
+      <ComponentRef Id="DesktopShortcutComponent" />
+    </Feature>
+
+    <!-- Harvest all files from publish folder -->
+    <ComponentGroup Id="PublishFiles" Directory="INSTALLFOLDER">
+      <Files Include="..\PdfTranslator\publish\**\*.*">
+        <Exclude Files="..\PdfTranslator\publish\**\*.pdb" />
+      </Files>
+    </ComponentGroup>
+
+    <!-- Start Menu Shortcut -->
+    <Component Id="StartMenuShortcut" Directory="ProgramMenuDir" Guid="E4F5A6B7-C8D9-0123-EF01-456789012345">
+      <Shortcut Id="StartMenuShortcut"
+                Name="PDF Translator"
+                Target="[INSTALLFOLDER]PdfTranslator.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveProgramMenuDir" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\PDFTranslator" Name="StartMenuInstalled" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <!-- Desktop Shortcut -->
+    <Component Id="DesktopShortcutComponent" Directory="DesktopFolder" Guid="F5A6B7C8-D9E0-1234-F012-567890123456">
+      <Shortcut Id="DesktopShortcut"
+                Name="PDF Translator"
+                Target="[INSTALLFOLDER]PdfTranslator.exe"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" Key="Software\PDFTranslator" Name="DesktopInstalled" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <!-- Standard WiX UI -->
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+  </Package>
+</Wix>

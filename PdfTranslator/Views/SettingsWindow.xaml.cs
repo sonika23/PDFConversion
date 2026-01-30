@@ -61,9 +61,8 @@ namespace PdfTranslator.Views
             AzureDocIntelEndpointTextBox.Text = _settings.AzureDocumentIntelligenceEndpoint;
             AzureDocIntelApiKeyTextBox.Text = _settings.AzureDocumentIntelligenceKey;
             
-            // PDF Generator selection
-            PdfPigRadio.IsChecked = _settings.SelectedPdfGenerator == PdfGeneratorEngine.PdfPig;
-            ITextSharpRadio.IsChecked = _settings.SelectedPdfGenerator == PdfGeneratorEngine.ITextSharp;
+            // PDF Generator - Always use PdfPig (hidden from UI)
+            PdfPigRadio.IsChecked = true;
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -96,11 +95,8 @@ namespace PdfTranslator.Views
             _settings.AzureDocumentIntelligenceEndpoint = AzureDocIntelEndpointTextBox.Text;
             _settings.AzureDocumentIntelligenceKey = AzureDocIntelApiKeyTextBox.Text;
             
-            // PDF Generator selection
-            if (ITextSharpRadio.IsChecked == true)
-                _settings.SelectedPdfGenerator = PdfGeneratorEngine.ITextSharp;
-            else
-                _settings.SelectedPdfGenerator = PdfGeneratorEngine.PdfPig;
+            // PDF Generator - Always use PdfPig (hidden from UI)
+            _settings.SelectedPdfGenerator = PdfGeneratorEngine.PdfPig;
 
             _configService.SaveSettings(_settings);
             

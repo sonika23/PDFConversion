@@ -18,7 +18,7 @@ namespace PdfTranslator.Models
         public OcrEngine SelectedOcrEngine { get; set; } = OcrEngine.Tesseract;
         public DeepLTranslationMode DeepLMode { get; set; } = DeepLTranslationMode.DocumentTranslation;
         public MicrosoftTranslationMode MicrosoftMode { get; set; } = MicrosoftTranslationMode.DocumentTranslation;
-        public PdfGeneratorEngine SelectedPdfGenerator { get; set; } = PdfGeneratorEngine.ITextSharp;
+        public PdfGeneratorEngine SelectedPdfGenerator { get; set; } = PdfGeneratorEngine.PdfPig;
         
         // Account tier selections
         public AccountTier MicrosoftAccountTier { get; set; } = AccountTier.Free;
@@ -51,8 +51,39 @@ namespace PdfTranslator.Models
         public string AzureDocumentIntelligenceEndpoint { get; set; } = string.Empty;
         public string AzureDocumentIntelligenceKey { get; set; } = string.Empty;
         public string TesseractDataPath { get; set; } = string.Empty;
+        
+        // Per-tier character tracking
+        public int MicrosoftFreeCharactersTranslated { get; set; }
+        public int MicrosoftPaidCharactersTranslated { get; set; }
+        public int DeepLFreeCharactersTranslated { get; set; }
+        public int DeepLPaidCharactersTranslated { get; set; }
+        
+        // Legacy - kept for backward compatibility (total of all)
         public int CharactersTranslated { get; set; }
         public bool OpenPdfAfterTranslation { get; set; } = true;
+        
+        /// <summary>
+        /// Updates the character count for the current provider and tier.
+        /// </summary>
+        public void AddCharactersTranslated(int count, TranslationProvider provider, AccountTier tier)
+        {
+            CharactersTranslated += count; // Keep legacy total updated
+            
+            if (provider == TranslationProvider.MicrosoftTranslator)
+            {
+                if (tier == AccountTier.Free)
+                    MicrosoftFreeCharactersTranslated += count;
+                else
+                    MicrosoftPaidCharactersTranslated += count;
+            }
+            else if (provider == TranslationProvider.DeepL)
+            {
+                if (tier == AccountTier.Free)
+                    DeepLFreeCharactersTranslated += count;
+                else
+                    DeepLPaidCharactersTranslated += count;
+            }
+        }
         
         // Helper methods to get active credentials based on tier
         public string GetActiveDeepLApiKey() => DeepLAccountTier == AccountTier.Paid ? DeepLPaidApiKey : DeepLFreeApiKey;

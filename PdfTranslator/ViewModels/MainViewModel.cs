@@ -34,6 +34,19 @@ namespace PdfTranslator.ViewModels
         [ObservableProperty]
         private int _charactersTranslated;
 
+        // Per-tier character display properties
+        [ObservableProperty]
+        private string _microsoftFreeCharsDisplay = "0";
+
+        [ObservableProperty]
+        private string _microsoftPaidCharsDisplay = "0";
+
+        [ObservableProperty]
+        private string _deepLFreeCharsDisplay = "0";
+
+        [ObservableProperty]
+        private string _deepLPaidCharsDisplay = "0";
+
         [ObservableProperty]
         private bool _isDeepLSelected;
 
@@ -91,6 +104,9 @@ namespace PdfTranslator.ViewModels
             _configService = new ConfigurationService();
             _settings = _configService.LoadSettings();
             CharactersTranslated = _settings.CharactersTranslated;
+            
+            // Load per-tier character counts
+            UpdateCharacterDisplays();
 
             // Set initial selections based on settings
             IsDeepLSelected = _settings.SelectedTranslationProvider == TranslationProvider.DeepL;
@@ -169,7 +185,7 @@ namespace PdfTranslator.ViewModels
 
                 await _processingService.ProcessPdfAsync(SelectedFilePath, outputPath);
 
-                CharactersTranslated = _settings.CharactersTranslated;
+                UpdateCharacterDisplays();
                 _configService.SaveSettings(_settings);
 
                 MessageBox.Show($"Translation completed!\nOutput saved to:\n{outputPath}", 
@@ -421,6 +437,15 @@ namespace PdfTranslator.ViewModels
             
             _configService.SaveSettings(_settings);
             StatusMessage = $"Switched to {engine} OCR";
+        }
+
+        private void UpdateCharacterDisplays()
+        {
+            MicrosoftFreeCharsDisplay = _settings.MicrosoftFreeCharactersTranslated.ToString("N0");
+            MicrosoftPaidCharsDisplay = _settings.MicrosoftPaidCharactersTranslated.ToString("N0");
+            DeepLFreeCharsDisplay = _settings.DeepLFreeCharactersTranslated.ToString("N0");
+            DeepLPaidCharsDisplay = _settings.DeepLPaidCharactersTranslated.ToString("N0");
+            CharactersTranslated = _settings.CharactersTranslated;
         }
 
         private void OnProgressChanged(object? sender, ProcessingProgress progress)

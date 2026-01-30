@@ -45,8 +45,8 @@ namespace PdfTranslator.Services
 
             var result = await _currentProvider.TranslateAsync(text, sourceLanguage, targetLanguage);
             
-            // Update character count
-            _settings.CharactersTranslated += result.CharacterCount;
+            // Update character count for the appropriate provider and tier
+            UpdateCharacterCount(result.CharacterCount);
             
             return result;
         }
@@ -60,10 +60,27 @@ namespace PdfTranslator.Services
 
             var results = await _currentProvider.TranslateBatchAsync(texts, sourceLanguage, targetLanguage);
             
-            // Update character count
-            _settings.CharactersTranslated += results.Sum(r => r.CharacterCount);
+            // Update character count for the appropriate provider and tier
+            UpdateCharacterCount(results.Sum(r => r.CharacterCount));
             
             return results;
+        }
+        
+        private void UpdateCharacterCount(int characterCount)
+        {
+            if (_settings.SelectedTranslationProvider == TranslationProvider.MicrosoftTranslator)
+            {
+                _settings.AddCharactersTranslated(characterCount, TranslationProvider.MicrosoftTranslator, _settings.MicrosoftAccountTier);
+            }
+            else if (_settings.SelectedTranslationProvider == TranslationProvider.DeepL)
+            {
+                _settings.AddCharactersTranslated(characterCount, TranslationProvider.DeepL, _settings.DeepLAccountTier);
+            }
+            else
+            {
+                // Google Cloud or other - just update legacy total
+                _settings.CharactersTranslated += characterCount;
+            }
         }
 
         public string GetProviderName()

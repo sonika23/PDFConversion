@@ -106,10 +106,10 @@ namespace PdfTranslator.Services
                 progress,
                 cancellationToken);
             
-            // Update character count after successful translation
-            _settings.CharactersTranslated += characterCount;
-            Log.Information("Updated characters translated count: +{Added} = {Total}", 
-                characterCount, _settings.CharactersTranslated);
+            // Update character count for Microsoft Paid tier (Document API requires S1)
+            _settings.AddCharactersTranslated(characterCount, TranslationProvider.MicrosoftTranslator, AccountTier.Paid);
+            Log.Information("Updated Microsoft Paid characters translated: +{Added} = {Total}", 
+                characterCount, _settings.MicrosoftPaidCharactersTranslated);
             
             ReportProgress(1, 1, "Completed!");
             Log.Information("Microsoft document translation completed: {OutputPath}", translatedPath);
@@ -140,9 +140,9 @@ namespace PdfTranslator.Services
                 "ru",    // Source: Russian
                 "en");   // Target: English
             
-            // Update character count after successful translation
+            // Update character count (Google Cloud doesn't have tier separation, use legacy)
             _settings.CharactersTranslated += characterCount;
-            Log.Information("Updated characters translated count: +{Added} = {Total}", 
+            Log.Information("Updated Google Cloud characters translated: +{Added} = {Total}", 
                 characterCount, _settings.CharactersTranslated);
             
             ReportProgress(1, 1, "Completed!");
@@ -192,10 +192,10 @@ namespace PdfTranslator.Services
                 "RU",      // Source: Russian
                 "EN-US");  // Target: American English
             
-            // Update character count after successful translation
-            _settings.CharactersTranslated += characterCount;
-            Log.Information("Updated characters translated count: +{Added} = {Total}", 
-                characterCount, _settings.CharactersTranslated);
+            // Update character count for the current DeepL tier
+            _settings.AddCharactersTranslated(characterCount, TranslationProvider.DeepL, _settings.DeepLAccountTier);
+            var deepLTierName = _settings.DeepLAccountTier == AccountTier.Free ? "Free" : "Pro";
+            Log.Information("Updated DeepL {Tier} characters translated: +{Added}", deepLTierName, characterCount);
             
             ReportProgress(1, 1, "Completed!");
             Log.Information("DeepL document translation completed: {OutputPath}", outputPath);

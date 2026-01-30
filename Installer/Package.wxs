@@ -36,8 +36,8 @@
 
     <!-- Harvest all files from publish folder -->
     <ComponentGroup Id="PublishFiles" Directory="INSTALLFOLDER">
-      <Files Include="..\PdfTranslator\publish\**\*.*">
-        <Exclude Files="..\PdfTranslator\publish\**\*.pdb" />
+      <Files Include="..\publish\**\*.*">
+        <Exclude Files="..\publish\**\*.pdb" />
       </Files>
     </ComponentGroup>
 

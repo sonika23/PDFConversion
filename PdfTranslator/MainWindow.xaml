@@ -170,11 +170,13 @@
                                         </StackPanel>
                                     </StackPanel>
                                     
+                                    <!-- Google Cloud hidden - reliability issues
                                     <RadioButton Content="Google Cloud" 
                                                IsChecked="{Binding IsGoogleCloudSelected}"
                                                Command="{Binding ToggleTranslationProviderCommand}"
                                                CommandParameter="Google"
                                                ToolTip="Uses Google Cloud Document Translation"/>
+                                    -->
                                 </StackPanel>
                             </StackPanel>
 
@@ -221,11 +223,51 @@
                                        Foreground="#E65100"/>
                         </Border>
 
-                        <TextBlock Grid.Row="3" 
-                                   Text="{Binding CharactersTranslated, StringFormat='Characters translated: {0:N0}'}"
-                                   Foreground="#666666"
-                                   FontSize="12"
-                                   Margin="0,10,0,0"/>
+                        <!-- Per-Tier Character Tracking -->
+                        <Border Grid.Row="3" Background="#F5F5F5" Padding="10" CornerRadius="3" Margin="0,10,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Grid.ColumnSpan="2" 
+                                           Text="Characters Translated" 
+                                           FontWeight="SemiBold" FontSize="11" 
+                                           Margin="0,0,0,5"/>
+                                
+                                <!-- Microsoft Column -->
+                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,0">
+                                    <TextBlock Text="Microsoft" FontWeight="Medium" FontSize="10" Foreground="#1976D2"/>
+                                    <TextBlock FontSize="10" Foreground="#666">
+                                        <Run Text="Free (F0): "/>
+                                        <Run Text="{Binding MicrosoftFreeCharsDisplay}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="10" Foreground="#666">
+                                        <Run Text="Paid (S1): "/>
+                                        <Run Text="{Binding MicrosoftPaidCharsDisplay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                
+                                <!-- DeepL Column -->
+                                <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,0">
+                                    <TextBlock Text="DeepL" FontWeight="Medium" FontSize="10" Foreground="#1976D2"/>
+                                    <TextBlock FontSize="10" Foreground="#666">
+                                        <Run Text="Free: "/>
+                                        <Run Text="{Binding DeepLFreeCharsDisplay}"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="10" Foreground="#666">
+                                        <Run Text="Pro: "/>
+                                        <Run Text="{Binding DeepLPaidCharsDisplay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </Grid>
                 </Border>
 

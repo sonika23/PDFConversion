@@ -194,8 +194,8 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ==================== GOOGLE CLOUD SETTINGS ==================== -->
-                <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15">
+                <!-- Google Cloud Settings - Hidden due to reliability issues -->
+                <Border Background="White" Padding="20" CornerRadius="3" Margin="0,0,0,15" Visibility="Collapsed">
                     <StackPanel>
                         <TextBlock Text="Google Cloud Translation" 
                                    FontSize="18" FontWeight="SemiBold"
@@ -302,42 +302,11 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ==================== PDF GENERATOR ENGINE ==================== -->
-                <Border Background="White" Padding="20" CornerRadius="3">
+                <!-- PDF Generator Engine - Hidden, defaulting to PdfPig -->
+                <Border Background="White" Padding="20" CornerRadius="3" Visibility="Collapsed">
                     <StackPanel>
-                        <TextBlock Text="PDF Processing (Text Mode Only)" 
-                                   FontSize="18" FontWeight="SemiBold"
-                                   Foreground="#1976D2"
-                                   Margin="0,0,0,15"/>
-
-                        <TextBlock Text="PDF Generator Engine" 
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,0,8"/>
-                        
-                        <RadioButton x:Name="PdfPigRadio" 
-                                     Content="PdfPig + PdfSharpCore (Apache 2.0)" 
-                                     Margin="0,0,0,5"/>
-                        <TextBlock Text="Original method - overlays translated text on PDF"
-                                   Foreground="#666666"
-                                   FontSize="12"
-                                   Margin="20,0,0,10"/>
-                        
-                        <RadioButton x:Name="ITextSharpRadio" 
-                                     Content="iTextSharp (LGPLv2) - Recommended" 
-                                     Margin="0,0,0,5"
-                                     IsChecked="True"/>
-                        <TextBlock Text="Better rotation/landscape handling"
-                                   Foreground="#4CAF50"
-                                   FontSize="12"
-                                   Margin="20,0,0,10"/>
-
-                        <TextBlock TextWrapping="Wrap" 
-                                   Foreground="#888888"
-                                   FontStyle="Italic"
-                                   FontSize="11">
-                            Note: These settings only apply when using Text Translation mode.
-                            Document Translation APIs handle PDFs directly.
-                        </TextBlock>
+                        <RadioButton x:Name="PdfPigRadio" IsChecked="True" Visibility="Collapsed"/>
+                        <RadioButton x:Name="ITextSharpRadio" Visibility="Collapsed"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
